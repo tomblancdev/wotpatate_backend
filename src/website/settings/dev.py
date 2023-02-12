@@ -8,6 +8,7 @@ SECRET_KEY = 'l@%PKs7u`.zZ,v4)Hw&A-gCR]Zt.2"3dQ1#0lZ>fZSK*r8]?C'
 
 INSTALLED_APPS += [
     'players.apps.PlayersConfig',
+    'tankopedia.apps.TankopediaConfig',
 ]
 
 STATIC_URL = '/static/'
