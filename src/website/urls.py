@@ -17,9 +17,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 
+from .views import register, login, logout
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('players/', include('players.urls')),
+    path('register/', register),
+    path('login/', login),
+    path('logout/', logout),
 ]
 
 if settings.DEBUG:

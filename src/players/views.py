@@ -4,9 +4,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.authtoken.models import Token
 
-from .models import Player, PlayerToken
-from .serializers import PlayerSerializer, PlayerTokenSerializer
+from .models import Player, PlayerToken, User
+from .serializers import PlayerSerializer, PlayerTokenSerializer, UserSerializer
 
 
 class PlayerViewSet(ReadOnlyModelViewSet):
