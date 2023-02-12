@@ -1,4 +1,7 @@
-from django.shortcuts import render
+
+import requests
+
+from rest_framework import filters
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,11 +14,15 @@ from rest_framework.authtoken.models import Token
 from .models import Player, PlayerToken, User
 from .serializers import PlayerSerializer, PlayerTokenSerializer, UserSerializer
 
+from utils.WOT_API import refresh_player_access_token
+
 
 class PlayerViewSet(ReadOnlyModelViewSet):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
-    search_fields = ('nickname')
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('nickname',)
+    lookup_field = 'nickname'
 
     def list(self, request, *args, **kwargs):
         if self.queryset.count() == 0:
@@ -25,22 +32,42 @@ class PlayerViewSet(ReadOnlyModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class PlayerTokenViewSet(ModelViewSet):
-    queryset = PlayerToken.objects.all()
-    serializer_class = PlayerTokenSerializer
+@api_view(['POST'])
+def register(request):
+    user_id = request.user.id
+    data = {**request.data, 'user_id': user_id}
+    serializer = PlayerSerializer(data=data)
+    if serializer.is_valid():
+        player = serializer.save()
+        if player:
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def create(self, request, *args, **kwargs):
-        if self.queryset.count() == 0:
-            return super().create(request, *args, **kwargs)
-        # update token if exists
-        instance = self.queryset.first()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
 
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+@api_view(['POST'])
+def add_token(request):
+    player_id = request.user.player.account_id
+    token = request.data.get('token')
+    expires_at = request.data.get('expires_at')
+    # check if token is valid from wot api
+    new_token = refresh_player_access_token(token)
+    print(new_token)
+    if new_token["status"] == "error":
+        return Response(data={'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+    # save new token
+    token = new_token["data"]["access_token"]
+    expires_at = new_token["data"]["expires_at"]
+    # check if player is owner of token
+    if new_token["data"]["account_id"] != player_id:
+        return Response(status=status.HTTP_403_FORBIDDEN, data={'error': 'Invalid token'})
+    data = {
+        'token': token,
+        'expires_at': expires_at,
+        'player_id': player_id
+    }
+    serializer = PlayerTokenSerializer(data=data)
+    if serializer.is_valid():
+        player_token = serializer.save()
+        if player_token:
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
