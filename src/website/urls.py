@@ -22,6 +22,7 @@ from .views import register, login, logout
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('players/', include('players.urls')),
+    path('tankopedia/', include('tankopedia.urls')),
     path('register/', register),
     path('login/', login),
     path('logout/', logout),
