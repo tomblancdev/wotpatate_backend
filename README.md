@@ -1,8 +1,8 @@
-# Django Website Template
+# WOT Patate Backend 🍟
 
-# Version: 1.0.0
+# Version: 0.0.0
 
-This is a simple Django template including splited settings, requirements and django-rest-framework.
+***Come into our WOT pataterie***
 
 ## Installation
 

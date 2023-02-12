@@ -6,6 +6,10 @@ ALLOWED_HOSTS = []
 
 SECRET_KEY = 'l@%PKs7u`.zZ,v4)Hw&A-gCR]Zt.2"3dQ1#0lZ>fZSK*r8]?C'
 
+INSTALLED_APPS += [
+    'players.apps.PlayersConfig',
+]
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
@@ -17,6 +21,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Database
 DATABASES = {
